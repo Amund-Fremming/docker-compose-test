@@ -1,0 +1,49 @@
+# How to use
+#   Start all      docker compose up -d
+#   Purge all      docker compose down -v
+#   Stop all       docker compose down
+#
+version: "3.9"
+
+services:
+
+  # Local database
+  db:
+    image: postgres:14
+    container_name: dev_db
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: dev_db
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - dev-network
+
+  # Pgadmin web ui
+  pgadmin:
+    image: dpage/pgadmin4:8.3
+    container_name: dev-pgadmin-web-ui
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: postgres
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+      - ./pgadmin-servers.json:/pgadmin4/servers.json
+    networks:
+      - dev-network
+
+volumes:
+  postgres-data:
+  pgadmin-data:
+
+networks:
+  dev-network:
